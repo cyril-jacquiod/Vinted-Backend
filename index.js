@@ -1,16 +1,31 @@
+//INSTALLER DEPENDANCES VIA LA COMMANDE "NPM I" DANS TERMINAL
 const express = require("express");
 const formidable = require("express-formidable");
 const cloudinary = require("cloudinary").v2;
 const cors = require("cors");
+const mongoose = require("mongoose");
+const morgan = require("morgan");
 
 const app = express();
 app.use(formidable());
 app.use(cors());
+app.use(morgan("dev"));
+app.use(express.json());
+
+require("dotenv").config();
 
 cloudinary.config({
   cloud_name: "dctdhq60n",
   api_key: "852832236852727",
   api_secret: "lmgnkN9BPElrEE1dxztJUBoq3gY",
+});
+
+//CONNEXION À BASE DE DONNEE
+mongoose.set("strictQuery", false);
+mongoose.connect(process.env.MONGODB_URI);
+
+app.get("/", (req, res) => {
+  res.json("Welcome to the signup project");
 });
 
 app.post("/upload", async (req, res) => {
@@ -29,6 +44,34 @@ app.post("/upload", async (req, res) => {
   }
 });
 
-app.listen(4000, () => {
-  console.log("Serveur Started");
+/****************************************/
+/******* PAYMENT ************************/
+/***************************************/
+const stripe = require("stripe")("sk_test_votreCléPrivée");
+
+app.post("/payment", async (req, res) => {
+  try {
+    // RECEPTION TOKEN CREE VIA API STRIPE DEPUIS FRONTEND
+    const stripeToken = req.body.stripeToken;
+    // CREATION DE LA TRANSACTION
+    const responseFromStripe = await stripe.charges.create({
+      amount: 2000,
+      currency: "eur",
+      description: "La description de l'objet acheté",
+      source: stripeToken,
+    });
+    // SI PAYMENT OK, MAJ DE L'OFFRE ET RENVOI AU FRONT OK
+    console.log(responseFromStripe);
+    // RENVOI AU CLIENT STATUS DE LA VALIDATION STRIPE
+    res.json(responseFromStripe.status);
+  } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
+});
+// Sauvegarder la transaction dans une BDD MongoDB
+
+//IMPORT DES ROUTES
+
+app.listen(3100, () => {
+  console.log("Server started");
 });
