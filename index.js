@@ -6,7 +6,15 @@ const cors = require("cors");
 const mongoose = require("mongoose");
 const morgan = require("morgan");
 
+// CREER UN SERVEUR
 const app = express();
+
+//IMPORT DES ROUTES
+const userRoutes = require("./routes/user");
+const offerRoutes = require("./routes/offer");
+app.use(userRoutes);
+app.use(offerRoutes);
+
 app.use(formidable());
 app.use(cors());
 app.use(morgan("dev"));
@@ -68,9 +76,14 @@ app.post("/payment", async (req, res) => {
     res.status(400).json({ message: error.message });
   }
 });
-// Sauvegarder la transaction dans une BDD MongoDB
+// SAUVEGARDE TRANSACTION DANS BDD MONGO DB
+app.get("/", (req, res) => {
+  res.json("Bienvenue sur mon serveur");
+});
 
-//IMPORT DES ROUTES
+app.all("*", (req, res) => {
+  res.status(404).json({ message: "This routes doesn't exist" });
+});
 
 app.listen(3100, () => {
   console.log("Server started");
