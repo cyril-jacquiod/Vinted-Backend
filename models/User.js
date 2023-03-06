@@ -6,7 +6,7 @@ const User = mongoose.model("User", {
     type: String,
   },
   account: {
-    usename: {
+    username: {
       required: true,
       type: String,
     },
@@ -17,4 +17,5 @@ const User = mongoose.model("User", {
   hash: String,
   salt: String,
 });
+
 module.exports = User;
